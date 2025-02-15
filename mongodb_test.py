@@ -1,6 +1,18 @@
 from pymongo import MongoClient
 
-client = MongoClient("mongodb://localhost:27017/")
-db = client["trading_db"]
+try:
+    client = MongoClient("mongodb://mongodb:27017/")
+    db = client["trading_db"]
+    print("✅ Connected to MongoDB!")
 
-print("MongoDB Connected:", db.list_collection_names())
+    # Insert a test record
+    db.trade_orders.insert_one({"test": "working"})
+    print("✅ Insert successful!")
+
+    # Fetch records
+    records = db.trade_orders.find()
+    for record in records:
+        print(record)
+
+except Exception as e:
+    print(f"❌ MongoDB Connection Failed: {e}")
