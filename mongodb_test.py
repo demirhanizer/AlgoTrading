@@ -5,11 +5,9 @@ try:
     db = client["trading_db"]
     print("✅ Connected to MongoDB!")
 
-    # Insert a test record
     db.trade_orders.insert_one({"test": "working"})
     print("✅ Insert successful!")
 
-    # Fetch records
     records = db.trade_orders.find()
     for record in records:
         print(record)

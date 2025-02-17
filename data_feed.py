@@ -7,7 +7,6 @@ from datetime import datetime
 import redis
 from bson import ObjectId
 
-# ✅ Configure Logging
 logging.basicConfig(
     filename="/app/logs/data_feed.log",
     level=logging.INFO,
@@ -15,10 +14,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# ✅ Binance WebSocket URL
 BINANCE_WS_URL = "wss://stream.binance.com:9443/ws/btcusdt@trade"
 
-# ✅ Connect to MongoDB
 try:
     client = MongoClient("mongodb://mongodb:27017/")
     db = client["trading_db"]
@@ -37,7 +34,6 @@ except Exception as e:
 
 
 async def stream_data():
-    """Continuously fetch trade data from Binance WebSocket, store in MongoDB, and publish to Redis."""
     while True:
         try:
             async with websockets.connect(BINANCE_WS_URL) as websocket:
@@ -53,13 +49,10 @@ async def stream_data():
                         "timestamp": datetime.utcnow().isoformat()
                     }
 
-                    # ✅ Insert trade into MongoDB and capture `_id`
                     inserted_trade = collection.insert_one(trade_record)
 
-                    # ✅ Convert `_id` to string for JSON serialization
                     trade_record["_id"] = str(inserted_trade.inserted_id)
 
-                    # ✅ Publish trade to Redis Pub/Sub
                     redis_client.publish("raw_trades", json.dumps(trade_record))
 
                     logger.info(f"💾 Trade saved & published: {trade_record}")
@@ -69,7 +62,7 @@ async def stream_data():
             await asyncio.sleep(5)
         except Exception as e:
             logger.error(f"❌ Unexpected error: {e}")
-            await asyncio.sleep(10)  # Wait before retrying
+            await asyncio.sleep(10)
 if __name__ == "__main__":
     logger.info("🚀 Starting Data Feed Service...")
     asyncio.run(stream_data())

@@ -5,7 +5,7 @@ import pytest
 def redis_client():
     client = redis.Redis(host="redis", port=6379, db=0)
     yield client
-    client.flushdb()  # Clean up Redis after test
+    client.flushdb()
 
 def test_redis_connection(redis_client):
     assert redis_client.ping() is True

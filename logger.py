@@ -2,18 +2,14 @@ import os
 import logging
 from logging.handlers import RotatingFileHandler
 
-# Define log directory
-log_dir = os.getenv("LOG_DIR", "logs")  # Use "logs" locally, "/app/logs" in Docker
+log_dir = os.getenv("LOG_DIR", "logs")
 
-# Ensure log directory exists
 if not os.path.exists(log_dir):
     os.makedirs(log_dir, exist_ok=True)
 
-# Setup logging
 log_file = os.path.join(log_dir, "trading_bot.log")
-log_formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+log_formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s")
 
-# Rotating File Handler (keeps logs limited in size)
 file_handler = RotatingFileHandler(log_file, maxBytes=5 * 1024 * 1024, backupCount=3)
 file_handler.setFormatter(log_formatter)
 

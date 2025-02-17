@@ -10,10 +10,8 @@ except redis.ConnectionError:
 
 redis_client = redis.Redis(host="redis", port=6379, db=0)
 
-# ✅ Write data to Redis
 redis_client.set("test_key", "Hello, Redis!")
 
-# ✅ Read data from Redis
 value = redis_client.get("test_key")
 
 if value:

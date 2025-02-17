@@ -34,7 +34,6 @@ def signals_collection(mongo_client):
 
 @pytest.mark.asyncio
 async def test_fetch_price_data(trades_collection):
-    # Insert test trade data
     test_trade = {"price": 50000, "timestamp": "2025-02-12T12:00:00"}
     trades_collection.insert_one(test_trade)
 
@@ -60,11 +59,10 @@ async def test_calculate_sma(trades_collection):
 
     assert "SMA_short" in df.columns
     assert "SMA_long" in df.columns
-    assert not df["SMA_short"].isnull().all()  # At least some values must be non-null
+    assert not df["SMA_short"].isnull().all()
 
 @pytest.mark.asyncio
 async def test_generate_trade_signal(trades_collection, signals_collection):
-    """Test trade signal generation based on SMA crossover."""
     test_trades = [
         {"price": 50000, "timestamp": "2025-02-12T12:00:00", "signal": "BUY"},
         {"price": 50100, "timestamp": "2025-02-12T12:01:00", "signal": "SELL"},
@@ -99,4 +97,4 @@ async def test_generate_trade_signal_no_crossover(trades_collection, signals_col
     await store_signals(df)
     stored_signals = list(signals_collection.find({}))
 
-    assert len(stored_signals) == 0  # No trade should be stored
+    assert len(stored_signals) == 0
