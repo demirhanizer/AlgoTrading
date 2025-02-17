@@ -67,6 +67,10 @@ docker compose build
 docker compose up -d
 
 ```
+### 🔹 Stop the Containers
+```sh
+docker compose down
+```
 This will:  
 - ✅ Set up MongoDB & Redis
 - ✅ Start the Data Feed
