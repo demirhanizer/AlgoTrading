@@ -63,7 +63,9 @@ BINANCE_SECRET_KEY=your_binance_secret_key
 
 ### 🔹 Build and Start the Containers
 ```sh
-docker-compose up --build
+docker compose build
+docker compose up -d
+
 ```
 This will:  
 - ✅ Set up MongoDB & Redis
