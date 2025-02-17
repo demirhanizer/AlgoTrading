@@ -28,7 +28,7 @@ redis_client = redis.Redis(host="redis", port=6379, db=0, decode_responses=True)
 REDIS_SIGNAL_KEY = "latest_trade_signal"
 REDIS_PRICE_HISTORY = "price_history"
 
-EXECUTION_MODE = "TIME_BASED"  # Options: "HFT", "TIME_BASED"
+EXECUTION_MODE = "HFT"  # Options: "HFT", "TIME_BASED"
 TIME_UNIT = "seconds"  # Options: "seconds", "minutes"
 DATA_COLLECTION_MODE = "STRICT"  # Options: "STRICT", "FLEXIBLE"
 
@@ -172,7 +172,6 @@ async def run_sma_strategy():
             df["interval"] = df["timestamp"].dt.floor("T" if TIME_UNIT == "minutes" else "S")
             grouped_df = df.groupby("interval")["price"].first().dropna()
 
-
             if DATA_COLLECTION_MODE == "STRICT":
                 latest_time = grouped_df.index[-1]
                 start_time = latest_time - timedelta(seconds=LONG_WINDOW - 1)
@@ -195,7 +194,8 @@ async def run_sma_strategy():
                     await generate_trade_signal(time_filtered_df.iloc[-1], short_sma, long_sma, time_filtered_df.index[-1])
             else:
                 logger.warning(f"⚠️ Not enough unique time points for SMA. Available: {len(time_filtered_df)}/{LONG_WINDOW}. Waiting for more data...")
-
+        else:
+            logger.warning("df is empty")
         await asyncio.sleep(1)
 
 
