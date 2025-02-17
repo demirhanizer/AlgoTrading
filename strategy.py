@@ -32,7 +32,6 @@ EXECUTION_MODE = "TIME_BASED"  # Options: "HFT", "TIME_BASED"
 TIME_UNIT = "seconds"  # Options: "seconds", "minutes"
 DATA_COLLECTION_MODE = "STRICT"  # Options: "STRICT", "FLEXIBLE"
 
-# SMA Settings
 SHORT_WINDOW = 50
 LONG_WINDOW = 200
 
@@ -48,16 +47,16 @@ def convert_mongo_document(doc):
 async def fetch_price_data():
     try:
         if EXECUTION_MODE == "HFT":
-            limit = 1000  # FOR HFT MODE
+            limit = 1000
             cursor = collection.find({}, {"price": 1, "timestamp": 1}).sort("timestamp", -1).limit(limit)
 
-        else:  # TIME_BASED strategy
+        else:
             if TIME_UNIT == "seconds":
                 time_range = LONG_WINDOW
             elif TIME_UNIT == "minutes":
                 time_range = LONG_WINDOW * 60
             else:
-                time_range = LONG_WINDOW * 60  # DEFAULT => MINUTES
+                time_range = LONG_WINDOW * 60
 
             latest_timestamp_entry = collection.find_one({}, {"timestamp": 1}, sort=[("timestamp", -1)])
 
@@ -81,12 +80,11 @@ async def fetch_price_data():
             logger.warning("⚠️ No trade data found in MongoDB. Skipping strategy execution.")
             return None
 
-        df["timestamp"] = pd.to_datetime(df["timestamp"])
+        df["timestamp"] = pd.to_datetime(df["timestamp"], format="ISO8601", errors="coerce")
         df = df.sort_values("timestamp")
 
-
         df.set_index("timestamp", inplace=True)
-        df = df.resample(f"{1 if TIME_UNIT == 'seconds' else 60}S").ffill()  # FORWARD FILLING METHODOLOGY
+        df = df.resample(f"{1 if TIME_UNIT == 'seconds' else 60}S").ffill()  # Forward-fill missing values
 
         if len(df) < LONG_WINDOW:
             logger.warning(f"⚠️ Not enough data ({len(df)}/{LONG_WINDOW}). Waiting for more trades.")
@@ -180,7 +178,7 @@ async def run_sma_strategy():
                 start_time = latest_time - timedelta(seconds=LONG_WINDOW - 1)
 
                 while len(grouped_df[(grouped_df.index >= start_time)]) < LONG_WINDOW:
-                    start_time -= timedelta(seconds=1)
+                    start_time -= timedelta(seconds=1)  # Move back one second at a time
 
                 time_filtered_df = grouped_df[(grouped_df.index >= start_time)]
                 logger.info(f"📌 STRICT Mode: Filtering data from {start_time} to {latest_time}. Found {len(time_filtered_df)} intervals.")
